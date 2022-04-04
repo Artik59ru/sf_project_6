@@ -1,0 +1,24 @@
+---
+- name: Install postresql
+  hosts: database
+  become: true
+
+
+  tasks:
+  - name: Add Postgresql gpg key
+    apt_key:
+      url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+  - name: Add Postgresgl APT repository
+    apt_repository:
+      repo: deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main
+
+  - name: Install Postgresql
+    apt:
+      name: postgresql-{{ postgresql_version }}
+      update_cache: yes
+  
+  - name: Ensure that postgresql is started
+    service:
+      name: postgresql
+      state: started

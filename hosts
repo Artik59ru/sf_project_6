@@ -1,0 +1,12 @@
+[web]
+vm-1
+
+[database]
+vm-1
+[database:vars]
+postgresql_version=12
+postgresql_data=/opt/asdoa
+
+[app]
+vm-2
+vm-3

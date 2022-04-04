@@ -1,0 +1,8 @@
+---
+- name: Install docker
+  hosts: app
+
+- name: Install postresql
+  hosts: database
+
+
