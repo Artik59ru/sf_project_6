@@ -1,8 +1,110 @@
 ---
-- name: Install docker
+- name: Install docker on Ubuntu
   hosts: app
+  become: true
+  tasks:
+    - name: Install prerequisites for Docker repository      
+      apt:
+        name: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg2', 'software-properties-common']
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Add Docker GPG key
+      apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Add Docker APT repository
+      apt_repository:
+        repo: deb [arch=amd64] https://download.docker.com/{{ ansible_system | lower }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+      when: ansible_distribution == "Ubuntu"
+
+    - name: Install Docker CE
+      apt:
+        name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
+        update_cache: yes
+      when: ansible_distribution == "Ubuntu"
+      
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enable: yes
+      when: ansible_distribution == "Ubuntu"
+
+- name: Install Docker on CentOS
+  hosts: app
+  become: true
+  tasks:
+    - name: Install yum utils
+      yum:
+        name: yum-utils
+        state: latest
+      when: ansible_distribution == "CentOS"
+ 
+    - name: Install device-mapper-persistent-data
+      yum:
+        name: device-mapper-persistent-data
+        state: latest
+      when: ansible_distribution == "CentOS"
+ 
+    - name: Install lvm2
+      yum:
+        name: lvm2
+        state: latest
+      when: ansible_distribution == "CentOS"
+ 
+    - name: Add Docker repo
+      get_url:
+        url: https://download.docker.com/linux/centos/docker-ce.repo
+        dest: /etc/yum.repos.d/docker-ce.repo
+      when: ansible_distribution == "CentOS"
+ 
+    - name: Install Docker
+      package:
+        name: docker-ce
+        state: latest
+      when: ansible_distribution == "CentOS"
+ 
+    - name: Start Docker service
+      service:
+        name: docker
+        state: started
+        enabled: yes
+      when: ansible_distribution == "CentOS"
 
 - name: Install postresql
   hosts: database
+  become: true
+  tasks:
+  - name: Add Postgresql gpg key
+    apt_key:
+      url: https://www.postgresql.org/media/keys/ACCC4CF8.asc
+
+  - name: Add Postgresgl APT repository
+    apt_repository:
+      repo: deb [arch=amd64] http://apt.postgresql.org/pub/repos/apt {{ ansible_distribution_release }}-pgdg main
+
+  - name: Install Postgresql
+    apt:
+      name: postgresql-{{ postgresql_version }}
+      update_cache: yes
+
+  - name: Change data directory
+    command:
+      cmd: sed -i 's/data_directory = .*/data_directory = {{postgresql_data}}/' /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+    notify: restart_postgresql
+  
+  - name: Ensure that postgresql is started
+    service:
+      name: postgresql
+      state: started
+
+  handlers:
+    - name: restart postresql
+      service:
+        name: postgresql
+        state: restarted
+      listen: restart_postgresql
 
 

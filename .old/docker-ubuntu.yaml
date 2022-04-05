@@ -25,6 +25,7 @@
         name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
         update_cache: yes
       when: ansible_distribution == "Ubuntu"
+      
     - name: Start Docker service
       service:
         name: docker
