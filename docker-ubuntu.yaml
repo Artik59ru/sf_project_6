@@ -2,23 +2,32 @@
 - hosts: app
   become: true
 
+
   tasks:
-    - name: Install prerequisites for Docker repository
+    - name: Install prerequisites for Docker repository      
       apt:
         name: ['apt-transport-https', 'ca-certificates', 'curl', 'gnupg2', 'software-properties-common']
         update_cache: yes
+      when: ansible_distribution == "Ubuntu"
 
     - name: Add Docker GPG key
       apt_key:
         url: https://download.docker.com/linux/ubuntu/gpg
+      when: ansible_distribution == "Ubuntu"
 
     - name: Add Docker APT repository
       apt_repository:
         repo: deb [arch=amd64] https://download.docker.com/{{ ansible_system | lower }}/{{ ansible_distribution | lower }} {{ ansible_distribution_release }} stable
+      when: ansible_distribution == "Ubuntu"
 
     - name: Install Docker CE
       apt:
         name: ['docker-ce', 'docker-ce-cli', 'containerd.io']
         update_cache: yes
+      when: ansible_distribution == "Ubuntu"
     - name: Start Docker service
-      command: systemctl start docker.service
+      service:
+        name: docker
+        state: started
+        enable: yes
+      when: ansible_distribution == "Ubuntu"
