@@ -17,8 +17,20 @@
     apt:
       name: postgresql-{{ postgresql_version }}
       update_cache: yes
+
+  - name: Change data directory
+    command:
+      cmd: sed -i 's/data_directory = .*/data_directory = {{postgresql_data}}/' /etc/postgresql/{{ postgresql_version }}/main/postgresql.conf
+    notify: restart_postgresql
   
   - name: Ensure that postgresql is started
     service:
       name: postgresql
       state: started
+
+  handlers:
+    - name: restart postresql
+      service:
+        name: postgresql
+        state: restarted
+      listen: restart_postgresql

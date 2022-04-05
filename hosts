@@ -5,7 +5,7 @@ vm-1
 vm-1
 [database:vars]
 postgresql_version=12
-postgresql_data=/opt/asdoa
+postgresql_data="\/var\/lib\/postgresql\/12\/main"
 
 [app]
 vm-2
